@@ -217,7 +217,7 @@ const submitController = async (req, res) => {
         existMr.userTrackUsage.push(newUsageTrack);
         await existMr.save();
 
-        
+
         // // Run the saving operations in parallel with a limit of 2 (adjust as needed)
         // const saveOperations = [
         //     async () => await newUsage.save(),
@@ -241,7 +241,6 @@ const submitController = async (req, res) => {
         res.status(500).send({ message: "Failed to track the Usage..!!!", success: false });
     }
 };
-
 
 const forgetPassword = async (req, res) => {
     try {
@@ -297,8 +296,28 @@ const forgetPassword = async (req, res) => {
     }
 }
 
+const getRecentUsedData = async (req, res) => {
+    try {
+        const mrId = req.params.id;
 
+        const mrExist = await User.findById(mrId);
+        if (!mrExist) {
+            return res.status(404).send({ message: "MR NOT FOUND...!!!", success: false });
+        }
 
+        // Filter out duplicates based on the "type" field
+        const recentTemplates = mrExist.userTrackUsage.reverse();
+        const filteredRecent = recentTemplates.filter(
+            (template, index, self) => index === self.findIndex(t => t.videoname === template.videoname)
+        );
+
+        const lastRecent = filteredRecent.slice(0, 3);
+
+        res.status(201).send({ message: "Recently used MR templates...", data: lastRecent, success: true });
+    } catch (err) {
+        return res.status(501).send({ message: "Failed to load recently used templates..!!" });
+    }
+}
 
 
 
@@ -306,5 +325,6 @@ module.exports = {
     userRegistration,
     userLogin,
     submitController,
-    forgetPassword
+    forgetPassword,
+    getRecentUsedData
 }

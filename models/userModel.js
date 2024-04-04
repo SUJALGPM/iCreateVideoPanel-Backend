@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const videoUserUsage = new mongoose.Schema({
+    
+});
+
 
 const cardCategorySchema = new mongoose.Schema({
     type: {

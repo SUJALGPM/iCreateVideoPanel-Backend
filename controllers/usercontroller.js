@@ -224,8 +224,8 @@ const submitController = async (req, res) => {
 const forgetPassword = async (req, res) => {
     try {
 
-        const { email } = req.body;
-        const mrExist = await User.findOne({ EMAIL: email });
+        const { MRID } = req.body;
+        const mrExist = await User.findOne({ MRID: MRID });
 
         if (!mrExist) {
             return res.status(404).send({ message: "MR Not found...!!!", success: false });

@@ -1,9 +1,27 @@
 const mongoose = require('mongoose');
 
-const videoUserUsage = new mongoose.Schema({
-    
+const userTrackUsageSchema = new mongoose.Schema({
+    mrName: String,
+    templateType: String,
+    doctorName: String,
+    videoname: String,
+    fileName: String,
+    dateOfCreation: {
+        type: Date,
+        default: Date.now
+    },
+    timeOfCreation: {
+        type: String,
+        default: () => {
+            const currentTime = new Date();
+            const hours = currentTime.getHours().toString().padStart(2, '0');
+            const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+            const seconds = currentTime.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+    },
+    processTime: String,
 });
-
 
 const cardCategorySchema = new mongoose.Schema({
     type: {
@@ -89,12 +107,13 @@ const userSchema = new mongoose.Schema({
         },
     ],
     cardCategories: [cardCategorySchema],
+    userTrackUsage: [userTrackUsageSchema]
 });
 
 const User = mongoose.model('User', userSchema);
 const UsageModel = mongoose.model('UsageData', cardCategorySchema);
+const userTrackUsage = mongoose.model('usageTrack', userTrackUsageSchema);
 
 
 
-
-module.exports = { User, UsageModel };
+module.exports = { User, UsageModel, userTrackUsage };

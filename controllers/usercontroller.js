@@ -1,4 +1,4 @@
-const { User, UsageModel } = require('../models/userModel');
+const { User, UsageModel, userTrackUsage } = require('../models/userModel');
 const adminModel = require('../models/adminmodel');
 const bcrypt = require("bcrypt");
 const async = require('async');
@@ -174,6 +174,7 @@ const submitController = async (req, res) => {
         const existMr = await User.findOne({ MRID: MRID }).populate(
             "cardCategories"
         );
+
         if (!existMr) {
             return res
                 .status(404)
@@ -182,9 +183,7 @@ const submitController = async (req, res) => {
 
         // Check if the doctor name is present or not...
         if (!doctorName) {
-            return res
-                .status(404)
-                .send({ message: "Doctor Name not found..!!!", success: false });
+            return res.status(404).send({ message: "Doctor Name not found..!!!", success: false });
         }
 
         // Format Data before storing...
@@ -196,30 +195,53 @@ const submitController = async (req, res) => {
             processTime: processTime,
         };
 
+        // Track the user(MR) Usage...
+        const TrackUsageData = {
+            mrName: existMr.USERNAME,
+            templateType: type,
+            doctorName: doctorName,
+            videoname: videoname,
+            fileName: fileName,
+            processTime: processTime,
+        }
+
         // Store the data in the database...
         const newUsage = new UsageModel(formatedData);
+        await newUsage.save();
+        existMr.cardCategories.push(newUsage);
+        await existMr.save();
 
-        // Run the saving operations in parallel with a limit of 2 (adjust as needed)
-        const saveOperations = [
-            async () => await newUsage.save(),
-            async () => {
-                existMr.cardCategories.push(newUsage);
-                await existMr.save();
-            },
-        ];
+        //Store the track usage data...
+        const newUsageTrack = new userTrackUsage(TrackUsageData);
+        await newUsageTrack.save();
+        existMr.userTrackUsage.push(newUsageTrack);
+        await existMr.save();
 
-        await async.parallelLimit(saveOperations, 10);
+        
+        // // Run the saving operations in parallel with a limit of 2 (adjust as needed)
+        // const saveOperations = [
+        //     async () => await newUsage.save(),
+        //     async () => {
+        //         existMr.cardCategories.push(newUsage);
+        //         await existMr.save();
+        //     },
+        //     async () => await newUsageTrack.save(),
+        //     async () => {
+        //         existMr.userTrackUsage.push(newUsageTrack);
+        //         await existMr.save();
+        //     }
+        // ];
 
-        res
-            .status(201)
-            .send({ message: "Usage successfully tracked.....", success: true });
+        // await async.parallelLimit(saveOperations, 10);
+
+
+        res.status(201).send({ message: "Usage successfully tracked.....", success: true });
     } catch (err) {
         console.error(err);
-        res
-            .status(500)
-            .send({ message: "Failed to track the Usage..!!!", success: false });
+        res.status(500).send({ message: "Failed to track the Usage..!!!", success: false });
     }
 };
+
 
 const forgetPassword = async (req, res) => {
     try {

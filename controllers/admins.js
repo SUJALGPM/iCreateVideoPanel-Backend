@@ -376,11 +376,11 @@ const uploadSheetAdmin = async (req, res) => {
                     USERNAME: row.USERNAME,
                     MRID: row.MRID,
                     EMAIL: row.EMAIL,
-                    Password: row.Password,
+                    Password: row.PASSWORD,
                     ROLE: row.ROLE,
                     HQ: row.HQ,
-                    REGION: REGION,
-                    BUSINESSUNIT: BUSINESSUNIT,
+                    REGION: row.REGION,
+                    BUSINESSUNIT: row.BUSINESSUNIT,
                     DOJ: row.DOJ,
                 });
                 await existingMr.save();

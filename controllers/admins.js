@@ -1,5 +1,5 @@
 const AdminModel = require("../models/adminmodel");
-const { User } = require("../models/userModel");
+const { User, userTrackUsage } = require("../models/userModel");
 const mrModel = require("../models/userModel");
 const jwt = require('jsonwebtoken');
 const xlsx = require("xlsx");
@@ -398,6 +398,45 @@ const uploadSheetAdmin = async (req, res) => {
     }
 }
 
+const getMostPopularTemplate = async (req, res) => {
+    try {
+
+        // Aggregate to get the count of each type and its most popular template
+        const fetchMostUsed = await userTrackUsage.aggregate([
+            { $group: { _id: { type: '$type', template: '$videoname' }, count: { $sum: 1 } } },
+            { $sort: { '_id.type': 1, count: -1 } },
+            {
+                $group: {
+                    _id: '$_id.type',
+                    mostPopularTemplate: { $first: '$_id.template' },
+                    count: { $first: '$count' },
+                },
+            },
+            { $project: { _id: 0, type: '$_id', mostPopularTemplate: 1, count: 1 } },
+        ]);
+
+        // Fetch remaining fields for each most popular template
+        const fetchCompleteDocuments = await Promise.all(
+            fetchMostUsed.map(async ({ type, mostPopularTemplate }) => {
+                const completeDocument = await userTrackUsage.findOne({ type, videoname: mostPopularTemplate });
+                return completeDocument;
+            })
+        );
+
+        console.log("Before data :", fetchCompleteDocuments);
+
+        //Fetch 3 record from minined data...
+        const FinalRecords = await fetchCompleteDocuments.slice(0, 3);
+
+        //Send the most popular design template....
+        res.status(201).json(FinalRecords);
+
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ message: "Failed to load most popular templates..!!!", success: false });
+    }
+}
+
 
 
 
@@ -410,7 +449,8 @@ module.exports = {
     handleCreateContentAdmin,
     handleReportAdminCreate,
     getAllDetailReport,
-    uploadSheetAdmin
+    uploadSheetAdmin,
+    getMostPopularTemplate
 }
 
 

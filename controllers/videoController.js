@@ -152,7 +152,7 @@ const uploadVideoToAPI = async (videoPath, videoName) => {
       },
     });
 
-    console.log(`Uploaded ${videoName}: ${response.data}`);
+    console.log(`Uploaded ${videoName}`.bgBlue.white);
   } catch (error) {
     console.error(`Error uploading ${videoName}:`, error);
   }
@@ -171,12 +171,12 @@ const uploadVideosInParallel = async () => {
 
   try {
     await Promise.all(uploadPromises);
-    console.log('All webm video files uploaded successfully.');
+    console.log('All webm video files uploaded successfully.'.bgYellow.black);
   } catch (error) {
     console.error('Error uploading videos:', error);
   }
 };
-uploadVideosInParallel();
+// uploadVideosInParallel();
 
 
 //Process parallel video same time....
@@ -271,6 +271,7 @@ const videoConvertor = async (req, res) => {
   }
 };
 
+
 const videoController = async (req, res) => {
   try {
     await videoModel.create({
@@ -284,6 +285,7 @@ const videoController = async (req, res) => {
     res.status(501).send({ message: "Data is not send." });
   }
 };
+
 
 const videoFetch = async (req, res) => {
   try {
@@ -319,10 +321,12 @@ const videoFetch = async (req, res) => {
   }
 };
 
+
 const allvideByname = async (req, res) => {
   const videosName = await videoModel.find({});
   res.json(videosName);
 };
+
 
 const allvideByname2 = async (req, res) => {
   try {
@@ -392,6 +396,7 @@ const allvideByname2 = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 module.exports = {
   videoController,

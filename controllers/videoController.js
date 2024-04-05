@@ -4,10 +4,9 @@ const path = require("path");
 const fs = require("fs");
 const ffmpeg = require('fluent-ffmpeg');
 const async = require('async');
-const Queue = require('async/queue');
 const colors = require("colors");
-const { v4: uuidv4 } = require('uuid');
-
+const axios = require("axios");
+const FormData = require('form-data');
 
 //Actually working code with concurent processing....
 // let processingQueue = [];
@@ -97,6 +96,90 @@ const { v4: uuidv4 } = require('uuid');
 let b;
 
 
+//Test script 1 by 1 passing....
+// const uploadVideosToAPI = async () => {
+//   try {
+//     const folderPath = 'S:/PROGRAMS/Mern_Stack Projects/Internship Projects  🔐🔐🔐/iCreateVideo-main/iCreateVideoBackend/TestVideo';
+
+//     // Get a list of all files in the folder
+//     const files = fs.readdirSync(folderPath);
+
+//     // Filter only video files (assuming they all have the .webm extension)
+//     const videoFiles = files.filter(file => file.endsWith('.webm'));
+
+//     // Iterate through each video file and upload it to the API
+//     for (const videoFile of videoFiles) {
+//       const videoPath = path.join(folderPath, videoFile);
+
+//       // Read the video file as a buffer asynchronously
+//       const videoBuffer = await fs.promises.readFile(videoPath);
+
+//       // Create a FormData object
+//       const formData = new FormData();
+//       formData.append('video', videoBuffer, { filename: videoFile });
+
+//       // Make a POST request to the API endpoint with FormData
+//       const response = await axios.post('http://192.168.1.10:8050/api/auth/videoCon', formData, {
+//         headers: {
+//           ...formData.getHeaders(), 
+//         },
+//       });
+
+//       // console.log(`Uploaded ${videoFile}: ${response.data}`); 
+//       console.log(`Uploaded ${videoFile}`.bgBlue.white); 
+//     }
+
+//     console.log('All webm video file uploaded successfully...'.bgMagenta.white);
+//   } catch (error) {
+//     console.error('Error uploading videos:', error);
+//   }
+// };
+
+// uploadVideosToAPI();
+let c;
+
+
+//Test script async all at same time....
+const uploadVideoToAPI = async (videoPath, videoName) => {
+  try {
+    const videoBuffer = await fs.promises.readFile(videoPath);
+    const formData = new FormData();
+    formData.append('video', videoBuffer, { filename: videoName });
+
+    const response = await axios.post('http://192.168.1.10:8050/api/auth/videoCon', formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+    });
+
+    console.log(`Uploaded ${videoName}: ${response.data}`);
+  } catch (error) {
+    console.error(`Error uploading ${videoName}:`, error);
+  }
+};
+const uploadVideosInParallel = async () => {
+  const folderPath = 'S:/PROGRAMS/Mern_Stack Projects/Internship Projects  🔐🔐🔐/iCreateVideo-main/iCreateVideoBackend/TestVideo';
+  const files = fs.readdirSync(folderPath);
+  const videoFiles = files.filter(file => file.endsWith('.webm'));
+
+  const uploadPromises = [];
+  for (const videoFile of videoFiles) {
+    const videoPath = path.join(folderPath, videoFile);
+    const uploadPromise = uploadVideoToAPI(videoPath, videoFile);
+    uploadPromises.push(uploadPromise);
+  }
+
+  try {
+    await Promise.all(uploadPromises);
+    console.log('All webm video files uploaded successfully.');
+  } catch (error) {
+    console.error('Error uploading videos:', error);
+  }
+};
+uploadVideosInParallel();
+
+
+//Process parallel video same time....
 let processingQueue = [];
 const videoConvertor = async (req, res) => {
   try {
@@ -187,34 +270,6 @@ const videoConvertor = async (req, res) => {
     res.status(501).send({ message: "Data is not sent." });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const videoController = async (req, res) => {
   try {

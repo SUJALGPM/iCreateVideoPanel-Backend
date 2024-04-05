@@ -158,7 +158,7 @@ const uploadVideoToAPI = async (videoPath, videoName) => {
   }
 };
 const uploadVideosInParallel = async () => {
-  const folderPath = 'S:/PROGRAMS/Mern_Stack Projects/Internship Projects  🔐🔐🔐/iCreateVideo-main/iCreateVideoBackend/TestVideo';
+  const folderPath = 'S:/PROGRAMS/Mern_Stack Projects/Internship Projects  🔐🔐🔐/iCreateVideo-Project/iCreateVideoBackend/TestVideo';
   const files = fs.readdirSync(folderPath);
   const videoFiles = files.filter(file => file.endsWith('.webm'));
 

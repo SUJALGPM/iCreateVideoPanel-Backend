@@ -191,7 +191,7 @@ const submitController = async (req, res) => {
             type: type,
             doctorName: doctorName,
             videoname: videoname,
-            fileName: fileName,
+            fileName: `${fileName}.mp4`,
             processTime: processTime,
         };
 

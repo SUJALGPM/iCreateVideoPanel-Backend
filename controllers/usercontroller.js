@@ -311,7 +311,7 @@ const getRecentUsedData = async (req, res) => {
             (template, index, self) => index === self.findIndex(t => t.videoname === template.videoname)
         );
 
-        const lastRecent = filteredRecent.slice(0, 3);
+        const [lastRecent] = filteredRecent;
 
         res.status(201).send({ message: "Recently used MR templates...", data: lastRecent, success: true });
     } catch (err) {

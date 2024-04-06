@@ -314,6 +314,7 @@ const getAllDetailReport = async (req, res) => {
                     DOCTORNAME: category.doctorName,
                     VIDEONAME: category.videoname,
                     FILENAME: category.fileName,
+                    PROCESSTIME: category.processTime,
                     DOC: formatDate(category.dateOfCreation),
                     DOT: formatTime(category.dateOfCreation),
                 }));

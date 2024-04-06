@@ -119,7 +119,7 @@ let b;
 //       formData.append('video', videoBuffer, { filename: videoFile });
 
 //       // Make a POST request to the API endpoint with FormData
-//       const response = await axios.post('http://192.168.1.10:8050/api/auth/videoCon', formData, {
+//       const response = await axios.post('http://192.168.1.15:8050/api/auth/videoCon', formData, {
 //         headers: {
 //           ...formData.getHeaders(), 
 //         },
@@ -146,7 +146,7 @@ const uploadVideoToAPI = async (videoPath, videoName) => {
     const formData = new FormData();
     formData.append('video', videoBuffer, { filename: videoName });
 
-    const response = await axios.post('http://192.168.1.10:8050/api/auth/videoCon', formData, {
+    const response = await axios.post('http://192.168.1.15:8050/api/auth/videoCon', formData, {
       headers: {
         ...formData.getHeaders(),
       },
@@ -240,21 +240,25 @@ const videoConvertor = async (req, res) => {
       function (err, results) {
         // fs.unlinkSync(videoFilePath);
         if (!err) {
-          res.status(200).contentType('video/mp4').sendFile(results[0], (err) => {
-            if (err) {
-              console.error('Error sending file:', err);
-            } else {
-              // fs.unlinkSync(results[0]); 
 
-              // Remove the processed file from the processingQueue
-              const processedFile = results[0].split(path.sep).pop();
-              processingQueue = processingQueue.filter(item => item !== processedFile);
+          res.status(200)
+            .contentType('video/mp4')
+            .header("NewFileName", `${newFileName}`)
+            .sendFile(results[0], (err) => {
+              if (err) {
+                console.error('Error sending file:', err);
+              } else {
+                // fs.unlinkSync(results[0]); 
 
-              // Log the updated processingQueue
-              console.log(`Updated processingQueue stack : [${processingQueue}]`.bgMagenta.white);
-              console.log(`Updated remaining queue Count : [${processingQueue.length}]`.bgMagenta.white);
-            }
-          });
+                // Remove the processed file from the processingQueue
+                const processedFile = results[0].split(path.sep).pop();
+                processingQueue = processingQueue.filter(item => item !== processedFile);
+
+                // Log the updated processingQueue
+                console.log(`Updated processingQueue stack : [${processingQueue}]`.bgMagenta.white);
+                console.log(`Updated remaining queue Count : [${processingQueue.length}]`.bgMagenta.white);
+              }
+            });
 
         } else {
           console.error('Async error:', err);

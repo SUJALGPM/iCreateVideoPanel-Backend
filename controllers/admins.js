@@ -253,8 +253,8 @@ const handleCreateContentAdmin = async (req, res) => {
         if (role !== 'SUPER_ADMIN') return res.json({ msg: "Only SuperAdmin Create Content Admin" });
 
 
-        const { Name, AdminId, Password, Gender, MobileNumber } = req.body;
-        console.log({ Name, AdminId, Password, Gender, MobileNumber })
+        const { Name, AdminId, Password, Gender, Email } = req.body;
+        console.log({ Name, AdminId, Password, Gender, Email })
         const admin = await AdminModel.findOne({ AdminId: AdminId });
         if (admin) {
             return res.status(400).json({
@@ -268,7 +268,7 @@ const handleCreateContentAdmin = async (req, res) => {
             AdminId,
             Password,
             Gender,
-            MobileNumber,
+            Email,
             role: "CONTENT_ADMIN"
         })
         await contentAdmin.save();
@@ -294,7 +294,7 @@ const handleReportAdminCreate = async (req, res) => {
         let adminCheck = await AdminModel.findById({ _id: userId });
         if (!adminCheck) return res.json({ msg: "No Admin Type Found" });
         if (role !== 'SUPER_ADMIN') return res.json({ msg: "Only SuperAdmin Create Report Admin" });
-        const { Name, AdminId, Password, Gender, MobileNumber } = req.body;
+        const { Name, AdminId, Password, Gender, Email } = req.body;
         const admin = await AdminModel.findOne({ AdminId: AdminId });
         if (admin) {
             return res.status(400).json({
@@ -307,7 +307,7 @@ const handleReportAdminCreate = async (req, res) => {
             AdminId,
             Password,
             Gender,
-            MobileNumber,
+            Email,
             role: "REPORT_ADMIN"
         })
         await reportAdmin.save();
@@ -375,7 +375,7 @@ const getAllDetailReport = async (req, res) => {
                     DOJ: mrDetails.DOJ,
                     TYPE: category.type,
                     DOCTORNAME: category.doctorName,
-                    VIDEONAME: category.videoname,
+                    VIDEOCARD: category.videoname,
                     FILENAME: category.fileName,
                     PROCESSTIME: category.processTime,
                     MBSIZE: category.MBSize,
@@ -396,7 +396,7 @@ const getAllDetailReport = async (req, res) => {
                     DOJ: mrDetails.DOJ,
                     TYPE: "",
                     DOCTORNAME: "",
-                    VIDEONAME: "",
+                    VIDEOCARD: "",
                     FILENAME: "",
                     PROCESSTIME: "",
                     MBSIZE: "",

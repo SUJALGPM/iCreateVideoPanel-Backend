@@ -319,14 +319,17 @@ const getRecentUsedData = async (req, res) => {
         }
 
         // Filter out duplicates based on the "type" field
+        let recentData = [];
         const recentTemplates = mrExist.userTrackUsage.reverse();
         const filteredRecent = recentTemplates.filter(
             (template, index, self) => index === self.findIndex(t => t.videoname === template.videoname)
         );
 
         const [lastRecent] = filteredRecent;
+        recentData.push(lastRecent);
 
-        res.status(201).send({ message: "Recently used MR templates...", data: lastRecent, success: true });
+        // res.status(201).send({ message: "Recently used MR templates...", data: recentData, success: true });
+        res.status(201).json(recentData);
     } catch (err) {
         return res.status(501).send({ message: "Failed to load recently used templates..!!" });
     }

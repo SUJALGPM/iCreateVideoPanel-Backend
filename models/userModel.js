@@ -21,6 +21,8 @@ const userTrackUsageSchema = new mongoose.Schema({
         }
     },
     processTime: String,
+    MBSize: String,
+    Status: String,
 });
 
 const cardCategorySchema = new mongoose.Schema({
@@ -47,6 +49,8 @@ const cardCategorySchema = new mongoose.Schema({
         }
     },
     processTime: String,
+    MBSize: String,
+    Status: String,
     cardCategories: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 

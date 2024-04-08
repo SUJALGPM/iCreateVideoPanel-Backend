@@ -166,8 +166,8 @@ const userLogin = async (req, res) => {
 const submitController = async (req, res) => {
     try {
         console.log("UpComing Data :", req.body);
-        const { type, doctorName, videoname, fileName, processTime, MRID } =
-            req.body;
+        const { type, doctorName, videoname, fileName, processTime, MRID, MBSIZE } = req.body;
+        let status;
         //   const mrId = req.params.id;
 
         //Check the MR is present or not...
@@ -186,6 +186,13 @@ const submitController = async (req, res) => {
             return res.status(404).send({ message: "Doctor Name not found..!!!", success: false });
         }
 
+        //Track the status based on data...
+        if (type && doctorName && videoname && fileName && MRID && processTime && MBSIZE) {
+            status = "Success";
+        } else {
+            status = "Failed";
+        }
+
         // Format Data before storing...
         const formatedData = {
             type: type,
@@ -193,7 +200,11 @@ const submitController = async (req, res) => {
             videoname: videoname,
             fileName: `${fileName}.mp4`,
             processTime: processTime,
+            MBSize: `${MBSIZE}MB`,
+            Status: status
         };
+
+        console.log("FormatedData : ", formatedData);
 
         // Track the user(MR) Usage...
         const TrackUsageData = {
@@ -203,6 +214,8 @@ const submitController = async (req, res) => {
             videoname: videoname,
             fileName: fileName,
             processTime: processTime,
+            MBSize: `${MBSIZE}MB`,
+            Status: status
         }
 
         // Store the data in the database...

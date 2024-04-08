@@ -3,13 +3,14 @@ const { User, userTrackUsage } = require("../models/userModel");
 const mrModel = require("../models/userModel");
 const jwt = require('jsonwebtoken');
 const xlsx = require("xlsx");
+const nodemailer = require("nodemailer");
 const SECRET = process.env.SECRET;
 
 
 const handleAdminCreateAccounts = async (req, res) => {
 
     try {
-        const { Name, AdminId, Password, Gender, MobileNumber } = req.body;
+        const { Name, AdminId, Password, Gender, Email } = req.body;
         // Log incoming data
         const admin = "";
         try {
@@ -18,6 +19,10 @@ const handleAdminCreateAccounts = async (req, res) => {
 
             if (admin) {
                 return res.json({ msg: "Admin Already Exists" })
+            }
+
+            if (!Email) {
+                return res.status(404).send({ message: "Email not found...!!", success: false });
             }
         } catch (error) {
             console.error('Error in findOne:', error);
@@ -37,7 +42,7 @@ const handleAdminCreateAccounts = async (req, res) => {
             AdminId: AdminId,
             Password: Password,
             Gender: Gender,
-            MobileNumber: MobileNumber
+            Email: Email
         });
         // Log the new admin data before saving
         await newAdmin.save();
@@ -96,6 +101,60 @@ const handleAdminLogin = async (req, res) => {
     }
 }
 
+const forgetPasswordAdmin = async (req, res) => {
+    try {
+
+        const { AdminId } = req.body;
+        const adminExist = await AdminModel.findOne({ AdminId: AdminId });
+
+        if (!adminExist) {
+            return res.status(404).send({ message: "Admin Not found...!!!", success: false });
+        }
+
+        // Send the password directly via email
+        const adminEmail = adminExist.Email;
+        const adminPassword = adminExist.Password;
+
+        // NodeMailer Configuration
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'digilateraldev@gmail.com',
+                pass: 'aekm bxbe duvs vyzx'
+            }
+        });
+
+        // Email content
+        var mailOptions = {
+            from: 'digiLateraliCreateVideoPanel@gmail.com',
+            to: adminEmail,
+            subject: 'Restore forget Password👍',
+            html: `
+              <div style="border: 1px solid #000; padding: 10px; text-align: center;">
+                <h3 style="text-align: center;">Dear : ${adminExist.Name}</h3>
+                <p> Your Password For <span style="background-color: blue; color: white; padding: 3px;">iCreateVideo Panel </span> : ${adminPassword}</p>
+                <p>Please keep this information secure.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+              </div>
+            `
+        };
+
+        // Send the email
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+                return res.status(500).send({ message: "Error sending email", success: false });
+            } else {
+                console.log('Email sent: ' + info.response);
+                return res.status(200).send({ message: "Password sent successfully", success: true });
+            }
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ message: "Failed to restore admin password..", success: false });
+    }
+}
+
 const verifyJwtForClient = async (req, res) => {
     try {
         const token = req.params.token;
@@ -135,7 +194,7 @@ const handleSuperAdminCreate = async (req, res) => {
         if (role !== '1') {
             return res.json("You are not Default admin");
         }
-        const { Name, AdminId, Password, Gender, MobileNumber } = req.body;
+        const { Name, AdminId, Password, Gender, Email } = req.body;
         console.log(req.body);
         const admin = await AdminModel.findOne({ AdminId: AdminId });
         if (admin) {
@@ -145,12 +204,16 @@ const handleSuperAdminCreate = async (req, res) => {
             })
         }
 
+        if (!Email) {
+            return res.status(404).send({ message: "Email not found...!!", success: false });
+        }
+
         const newAdmin = new AdminModel({
             Name,
             AdminId,
             Password,
             Gender,
-            MobileNumber,
+            Email,
             role: "SUPER_ADMIN"
         })
 
@@ -315,8 +378,10 @@ const getAllDetailReport = async (req, res) => {
                     VIDEONAME: category.videoname,
                     FILENAME: category.fileName,
                     PROCESSTIME: category.processTime,
-                    DOC: formatDate(category.dateOfCreation),
-                    DOT: formatTime(category.dateOfCreation),
+                    MBSIZE: category.MBSize,
+                    CreationDate: formatDate(category.dateOfCreation),
+                    CreationTime: formatTime(category.dateOfCreation),
+                    Status: category.Status
                 }));
                 detailReport.push(...cardCategories);
             } else {
@@ -333,8 +398,11 @@ const getAllDetailReport = async (req, res) => {
                     DOCTORNAME: "",
                     VIDEONAME: "",
                     FILENAME: "",
-                    DOC: "",
-                    DOT: ""
+                    PROCESSTIME: "",
+                    MBSIZE: "",
+                    CreationDate: "",
+                    CreationTime: "",
+                    Status: ""
                 });
             }
         }
@@ -451,7 +519,8 @@ module.exports = {
     handleReportAdminCreate,
     getAllDetailReport,
     uploadSheetAdmin,
-    getMostPopularTemplate
+    getMostPopularTemplate,
+    forgetPasswordAdmin
 }
 
 

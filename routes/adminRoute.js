@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 
-const { verifyJwtForClient, handleAdminCreateAccounts, handleAdminLogin, handleSuperAdminCount, handleSuperAdminCreate, handleCreateContentAdmin, handleReportAdminCreate, getAllDetailReport, uploadSheetAdmin, getMostPopularTemplate } = require('../controllers/admins');
+const { verifyJwtForClient, handleAdminCreateAccounts, handleAdminLogin, handleSuperAdminCount, handleSuperAdminCreate, handleCreateContentAdmin, handleReportAdminCreate, getAllDetailReport, uploadSheetAdmin, getMostPopularTemplate, forgetPasswordAdmin } = require('../controllers/admins');
 const { isAuthenticated } = require("../middleware/auth")
 
 
@@ -35,6 +35,7 @@ router.post("/create-report-admin", isAuthenticated, handleReportAdminCreate);
 router.get("/all-detail-report/:id", getAllDetailReport);
 router.post("/upload-sheet-admin/:id", upload, uploadSheetAdmin);
 router.get("/get-most-popular-template", getMostPopularTemplate);
+router.post("/admin-forget-password", forgetPasswordAdmin);
 
 
 

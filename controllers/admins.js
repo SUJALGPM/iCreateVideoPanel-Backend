@@ -4,6 +4,7 @@ const mrModel = require("../models/userModel");
 const jwt = require('jsonwebtoken');
 const xlsx = require("xlsx");
 const nodemailer = require("nodemailer");
+const { bgYellow } = require("colors");
 const SECRET = process.env.SECRET;
 
 
@@ -326,12 +327,20 @@ const handleReportAdminCreate = async (req, res) => {
     }
 }
 
+// function formatDate(dateString) {
+//     const date = new Date(dateString);
+//     const day = date.getDate();
+//     const month = date.getMonth() + 1;
+//     const year = date.getFullYear();
+//     return `${day}/${month}/${year}`;
+// }
+
 function formatDate(dateString) {
     const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${day}-${month}-${year}`;
 }
 
 function formatTime(dateString) {
@@ -372,7 +381,7 @@ const getAllDetailReport = async (req, res) => {
                     HQ: mrDetails.HQ,
                     REGION: mrDetails.REGION,
                     BUSINESSUNIT: mrDetails.BUSINESSUNIT,
-                    DOJ: mrDetails.DOJ,
+                    DOJ: mrDetails.DOJ.replace(/\//g, '-'),
                     TYPE: category.type,
                     DOCTORNAME: category.doctorName,
                     VIDEOCARD: category.videoname,
@@ -416,6 +425,64 @@ const getAllDetailReport = async (req, res) => {
     }
 }
 
+//Existing working sheet without validation...
+// const uploadSheetAdmin = async (req, res) => {
+//     try {
+//         // Admin Exist or not checking......
+//         const AdminId = req.params.id;
+//         const admin = await AdminModel.findById(AdminId);
+//         if (!admin) {
+//             return res.status(400).json({
+//                 msg: "Admin Not Found"
+//             });
+//         }
+
+//         // EXCEL SHEET Upload file....
+//         const workbook = xlsx.readFile(req.file.path);
+//         const sheetName = workbook.SheetNames[0];
+//         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+//         // For loop the sheet data to store in various collections
+//         for (const row of sheetData) {
+//             console.log('Sheet Name : ', sheetName);
+//             console.log('Sheet Data:', row);
+
+//             // Remove backticks from the DOJ field
+//             row.DOJ = row.DOJ.replace(/`/g, '');
+
+//             // Check the MR exists or not
+//             let existingMr = await User.findOne({ MRID: row.MRID });
+//             if (existingMr) {
+//                 return res.status(501).send({ message: "MR ALREADY EXIST..!!!", success: false });
+//             }
+//             if (!existingMr) {
+//                 // MR doesn't exist, create new MR
+//                 existingMr = new User({
+//                     USERNAME: row.USERNAME,
+//                     MRID: row.MRID,
+//                     EMAIL: row.EMAIL,
+//                     Password: row.PASSWORD,
+//                     ROLE: row.ROLE,
+//                     HQ: row.HQ,
+//                     REGION: row.REGION,
+//                     BUSINESSUNIT: row.BUSINESSUNIT,
+//                     DOJ: row.DOJ,
+//                 });
+//                 await existingMr.save();
+
+//                 // Add the created MR to the admin's Mrs array
+//                 admin.Mrs.push(existingMr._id);
+//                 await admin.save();
+//             }
+//         }
+
+//         res.status(200).json({ message: "MR Excel Sheet Data uploaded successfully...", success: true });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(501).send({ message: "Failed to upload sheet..!!", success: false });
+//     }
+// }
+
 const uploadSheetAdmin = async (req, res) => {
     try {
         // Admin Exist or not checking......
@@ -430,15 +497,52 @@ const uploadSheetAdmin = async (req, res) => {
         // EXCEL SHEET Upload file....
         const workbook = xlsx.readFile(req.file.path);
         const sheetName = workbook.SheetNames[0];
-        const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = xlsx.utils.sheet_to_json(sheet);
+
+        // Define required column headers
+        const requiredHeaders = [
+            'USERNAME',
+            'MRID',
+            'EMAIL',
+            'PASSWORD',
+            'ROLE',
+            'HQ',
+            'REGION',
+            'BUSINESSUNIT',
+            'DOJ'
+        ];
+
+        // Check if all required headers are present
+        const sheetHeaders = Object.keys(sheetData[0]);
+        const missingHeaders = requiredHeaders.filter(header => !sheetHeaders.includes(header));
+        const extraHeaders = sheetHeaders.filter(header => !requiredHeaders.includes(header));
+
+        if (missingHeaders.length > 0) {
+            return res.status(400).json({
+                msg: `Missing columns: ${missingHeaders.join(', ')}`
+            });
+        }
+
+        if (extraHeaders.length > 0) {
+            return res.status(400).json({
+                msg: `Extra columns found: ${extraHeaders.join(', ')}`
+            });
+        }
 
         // For loop the sheet data to store in various collections
         for (const row of sheetData) {
-            console.log('Sheet Data:', row);
+            console.log(`Sheet Name : ${sheetName}`.bgYellow.black);
+            console.log(`Sheet Data: ${row}`.bgYellow.black);
 
+            // Remove backticks from the DOJ field
+            row.DOJ = row.DOJ.replace(/`/g, '');
 
             // Check the MR exists or not
             let existingMr = await User.findOne({ MRID: row.MRID });
+            if (existingMr) {
+                return res.status(501).send({ message: "MR ALREADY EXIST..!!!", success: false });
+            }
             if (!existingMr) {
                 // MR doesn't exist, create new MR
                 existingMr = new User({
@@ -466,6 +570,7 @@ const uploadSheetAdmin = async (req, res) => {
         res.status(501).send({ message: "Failed to upload sheet..!!", success: false });
     }
 }
+
 
 const getMostPopularTemplate = async (req, res) => {
     try {

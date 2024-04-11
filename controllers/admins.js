@@ -533,7 +533,7 @@ const uploadSheetAdmin = async (req, res) => {
         // For loop the sheet data to store in various collections
         for (const row of sheetData) {
             console.log(`Sheet Name : ${sheetName}`.bgYellow.black);
-            console.log(`Sheet Data: ${row}`.bgYellow.black);
+            // console.log(`Sheet Data: ${row}`.bgYellow.black);
 
             // Remove backticks from the DOJ field
             row.DOJ = row.DOJ.replace(/`/g, '');
@@ -549,7 +549,7 @@ const uploadSheetAdmin = async (req, res) => {
                     USERNAME: row.USERNAME,
                     MRID: row.MRID,
                     EMAIL: row.EMAIL,
-                    Password: row.PASSWORD,
+                    PASSWORD: row.PASSWORD,
                     ROLE: row.ROLE,
                     HQ: row.HQ,
                     REGION: row.REGION,

@@ -121,7 +121,7 @@ const forgetPasswordAdmin = async (req, res) => {
             service: 'gmail',
             auth: {
                 user: 'digilateraldev@gmail.com',
-                pass: 'aekm bxbe duvs vyzx'
+                pass: 'ohax atcp umht xked'
             }
         });
 
@@ -533,16 +533,16 @@ const uploadSheetAdmin = async (req, res) => {
         // For loop the sheet data to store in various collections
         for (const row of sheetData) {
             console.log(`Sheet Name : ${sheetName}`.bgYellow.black);
-            // console.log(`Sheet Data: ${row}`.bgYellow.black);
 
             // Remove backticks from the DOJ field
             row.DOJ = row.DOJ.replace(/`/g, '');
 
             // Check the MR exists or not
             let existingMr = await User.findOne({ MRID: row.MRID });
-            if (existingMr) {
-                return res.status(501).send({ message: "MR ALREADY EXIST..!!!", success: false });
-            }
+            // if (existingMr) {
+            //     return res.status(501).send({ message: "MR ALREADY EXIST..!!!", success: false });
+            // }
+
             if (!existingMr) {
                 // MR doesn't exist, create new MR
                 existingMr = new User({
@@ -561,6 +561,20 @@ const uploadSheetAdmin = async (req, res) => {
                 // Add the created MR to the admin's Mrs array
                 admin.Mrs.push(existingMr._id);
                 await admin.save();
+            } else {
+                // MR exists, update its fields
+                existingMr.MRID = row.MRID;
+                existingMr.USERNAME = row.USERNAME;
+                existingMr.EMAIL = row.EMAIL;
+                existingMr.PASSWORD = row.PASSWORD;
+                existingMr.ROLE = row.ROLE;
+                existingMr.HQ = row.HQ;
+                existingMr.REGION = row.REGION;
+                existingMr.BUSINESSUNIT = row.BUSINESSUNIT;
+                existingMr.DOJ = row.DOJ;
+
+                //save updated fields....
+                await existingMr.save();
             }
         }
 

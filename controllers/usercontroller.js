@@ -200,7 +200,7 @@ const submitController = async (req, res) => {
             videoname: videoname,
             fileName: `${fileName}.mp4`,
             processTime: processTime,
-            MBSize: `${MBSIZE}MB`,
+            MBSize: `${MBSIZE}`,
             Status: status
         };
 
@@ -214,7 +214,7 @@ const submitController = async (req, res) => {
             videoname: videoname,
             fileName: fileName,
             processTime: processTime,
-            MBSize: `${MBSIZE}MB`,
+            MBSize: `${MBSIZE}`,
             Status: status
         }
 
@@ -274,7 +274,7 @@ const forgetPassword = async (req, res) => {
             service: 'gmail',
             auth: {
                 user: 'digilateraldev@gmail.com',
-                pass: 'aekm bxbe duvs vyzx'
+                pass: 'ohax atcp umht xked'
             }
         });
 
